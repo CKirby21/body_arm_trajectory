@@ -18,12 +18,12 @@ fn main() {
     let arm_velocity: f64 = mph_to_fps(arm_velocity);
     let arm_veolocity_sq: f64 = squared(arm_velocity);
     
-    // Determine launch angle that yields the greastest distance (x)
-    let mut launch_angle: f64 = 90.0;
     let mut x_info = MaxInfo::new();
     let mut y_info = MaxInfo::new();
-    while launch_angle >= 0.0 {
 
+    for i in 0..=90 {
+        
+        let launch_angle: f64 = f64::from(i);
         let launch_angle_rad = launch_angle.to_radians();
         let launch_angle_cos = launch_angle_rad.cos();
         let launch_angle_tan = launch_angle_rad.tan();
@@ -34,16 +34,19 @@ fn main() {
         let mut y: f64 = launch_height;
         let mut y_peak: f64 = y;
 
-        // Compute Trajectory of current launch_angle
+        // Compute trajectory of current launch angle
         let mut x: f64 = 0.0;
         while y >= 0.0 {
             let denominator: f64 = 2.0 * arm_veolocity_sq * launch_angle_cos_sq;
             y = launch_height + ( x * launch_angle_tan ) - GRAVITY * ( squared(x) / denominator );
             y_peak = if y > y_peak {y} else {y_peak};
-            x += 0.1;
+
+            // Roundoff Error Mitigation
+            // 0.03125 was chosen because it can be represented exactly in binary 66958.44
+            x += 0.03125;
         }
         // Walk x back to when y was above 0
-        x -= 0.1;
+        x -= 0.03125;
 
         let launch_x: f64 = launch_angle_rad.sin() * arm_length;
         let x_final: f64 = x - launch_x;
@@ -53,18 +56,15 @@ fn main() {
             x_info.angle = launch_angle;
             x_info.max = x_final;
         }
-        if y_peak > x_info.max {
+        if y_peak > y_info.max {
             y_info.angle = launch_angle;
             y_info.max = y_peak;
         }
-
-        // Check the next angle
-        launch_angle -= 0.1;
     }
 
     // Print the stuff
-    println!("Max Distance was {:.2}ft at an angle of {:.2} degrees", x_info.max, x_info.angle);
-    println!("Max Height was {:.2}ft at an angle of {:.2} degrees", y_info.max, y_info.angle);
+    println!("Max Distance was {:.2}ft at an angle of {} degrees", x_info.max, x_info.angle);
+    println!("Max Height was {:.2}ft at an angle of {} degrees", y_info.max, y_info.angle);
 }
 
 fn get_float64_input (message: &str) -> f64 {
