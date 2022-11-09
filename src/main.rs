@@ -42,11 +42,11 @@ fn main() {
             y_peak = if y > y_peak {y} else {y_peak};
 
             // Roundoff Error Mitigation
-            // 0.03125 was chosen because it can be represented exactly in binary 66958.44
-            x += 0.03125;
+            // 0.015625 was chosen because it can be represented exactly in binary
+            x += 0.015625;
         }
         // Walk x back to when y was above 0
-        x -= 0.03125;
+        x -= 0.015625;
 
         let launch_x: f64 = launch_angle_rad.sin() * arm_length;
         let x_final: f64 = x - launch_x;
