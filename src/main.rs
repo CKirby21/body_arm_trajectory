@@ -1,4 +1,6 @@
 use std::io;
+#[macro_use]
+extern crate assert_float_eq;
 
 // Feet per second squared
 const GRAVITY: f64 = 32.17404855643;
@@ -23,7 +25,7 @@ fn main() {
     let arm_velocity: f64 = get_float64_input("Velocity of your arm (mph):");
 
     let arm_velocity: f64 = mph_to_fps(arm_velocity);
-    let arm_veolocity_sq: f64 = squared(arm_velocity);
+    let arm_veolocity_sq: f64 = f64::powi(arm_velocity, 2);
     
     let mut x_info = MaxInfo::new();
     let mut y_info = MaxInfo::new();
@@ -34,7 +36,7 @@ fn main() {
         let launch_angle_rad = launch_angle.to_radians();
         let launch_angle_cos = launch_angle_rad.cos();
         let launch_angle_tan = launch_angle_rad.tan();
-        let launch_angle_cos_sq = squared(launch_angle_cos);
+        let launch_angle_cos_sq = f64::powi(launch_angle_cos, 2);
 
         let arm_height: f64 = launch_angle_cos * arm_length;
         let launch_height: f64 = body_height + arm_height;
@@ -45,7 +47,8 @@ fn main() {
         let mut x: f64 = 0.0;
         while y >= 0.0 {
             let denominator: f64 = 2.0 * arm_veolocity_sq * launch_angle_cos_sq;
-            y = launch_height + ( x * launch_angle_tan ) - GRAVITY * ( squared(x) / denominator );
+            let x_sq: f64 = f64::powi(x, 2);
+            y = launch_height + ( x * launch_angle_tan ) - GRAVITY * ( x_sq / denominator );
             y_peak = if y > y_peak {y} else {y_peak};
 
             // Roundoff Error Mitigation
@@ -96,6 +99,18 @@ fn mph_to_fps (velocity: f64) -> f64 {
     (velocity * 5280.0) / (60.0 * 60.0)
 }
 
-fn squared (num: f64) -> f64 {
-    f64::powi(num, 2)
+#[cfg(test)]
+mod tests {
+    use super::*;
+    const TOLERANCE: f64 = 0.00001;
+
+    #[test]
+    fn convert_100_mph_to_fps() {
+        assert_float_absolute_eq!(mph_to_fps(100.0), 146.66666, TOLERANCE);
+    }
+
+    #[test]
+    fn convert_0_mph_to_fps() {
+        assert_float_absolute_eq!(mph_to_fps(0.0), 0.0, TOLERANCE);
+    }
 }
