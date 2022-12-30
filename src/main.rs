@@ -7,6 +7,13 @@ struct MaxInfo {angle: f64, max: f64}
 
 impl MaxInfo {
     fn new() -> Self { Self { angle: 0.0, max: 0.0 } }
+
+    fn update(&mut self, potential_max: f64, potential_angle: f64) {
+        if potential_max > self.max {
+            self.angle = potential_angle;
+            self.max = potential_max;
+        }
+    }
 }
 
 fn main() {
@@ -52,14 +59,8 @@ fn main() {
         let x_final: f64 = x - launch_x;
 
         // Decide if maxes are updated
-        if x_final > x_info.max {
-            x_info.angle = launch_angle;
-            x_info.max = x_final;
-        }
-        if y_peak > y_info.max {
-            y_info.angle = launch_angle;
-            y_info.max = y_peak;
-        }
+        x_info.update(x_final, launch_angle);
+        y_info.update(y_peak, launch_angle);
     }
 
     // Print the stuff
